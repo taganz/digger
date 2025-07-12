@@ -181,7 +181,7 @@ export function getBlockUnderMouse(mx, my) {
 
 
 // Algoritmo ray-casting para saber si (px,py) está dentro de polígono 'poly'
-function pointInPoly(px, py, poly) {
+export function pointInPoly(px, py, poly) {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     let xi = poly[i].x, yi = poly[i].y;
