@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 global.window = global.window || {};
 
-const { pointInPoly } = await import('../js/world.js');
+const { _pointInPoly } = await import('../js/render.js');
 
 const square = [
   { x: 0, y: 0 },
@@ -13,9 +13,9 @@ const square = [
 ];
 
 test('returns true for a point inside the polygon', () => {
-  assert.strictEqual(pointInPoly(5, 5, square), true);
+  assert.strictEqual(_pointInPoly(5, 5, square), true);
 });
 
 test('returns false for a point outside the polygon', () => {
-  assert.strictEqual(pointInPoly(15, 5, square), false);
+  assert.strictEqual(_pointInPoly(15, 5, square), false);
 });

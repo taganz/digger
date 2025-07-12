@@ -145,7 +145,7 @@ export function getBlockUnderMouse(mx, my) {
       [ {x:x1,y:y1}, {x:x2,y:y2}, {x:x2,y:y2 + tileH}, {x:x1,y:y1 + tileH} ]
     ];
     for (const poly of faces) {
-      if (pointInPoly(mx, my, poly)) return b;
+      if (_pointInPoly(mx, my, poly)) return b;
     }
   }
   return null;
@@ -153,7 +153,7 @@ export function getBlockUnderMouse(mx, my) {
 
 
 // Algoritmo ray-casting para saber si (px,py) está dentro de polígono 'poly'
-function pointInPoly(px, py, poly) {
+export function _pointInPoly(px, py, poly) {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     let xi = poly[i].x, yi = poly[i].y;
