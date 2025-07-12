@@ -8,38 +8,53 @@ let rotAngle = Math.PI / 21;               // Ángulo de yaw (rotación alrededo
 let pitchAngle = - Math.PI / 11;  // Ángulo de pitch (inclinación alrededor de X)
 let shouldRecalculateDepth = false;
 
-export function getBlocksOrderedByDepth() {
-  if (shouldRecalculateDepth) { 
-      // Obtiene todos los bloques como un array plano y los ordena por profundidad
-      recalculateDepth();
-      shouldRecalculateDepth = false;
-  }
+export function getBlocksAndLemmingsOrderedByDepth() {
+
+  recalculateDepthIfNeeded();
+
     let blocks = worldAsArray();           // bloques presentes con depth
     let lems   = collectLemmings();        // vacíos con lemmings + depth
     blocks.sort((a, b) => a.depth - b.depth);
   
     let items = [
-      ...blocks.map(b => ({ ...b, type: 'block' })),
-      ...lems  .map(l => ({ ...l, type: 'lemming' }))
+      ...blocks.map(b => ({ payload: b, type: 'block' })),
+      ...lems  .map(l => ({ payload: l, type: 'lemming' }))
     ];
-    items.sort((a,b) => a.depth - b.depth);
+    items.sort((a,b) => a.payload.depth - b.payload.depth);
 
     return items;
 }
 
-function recalculateDepth() {
-  for (let x = 0; x < blocksW; x++) {
-    for (let y = 0; y < blocksW; y++) {
-      for (let z = 0; z < blocksH; z++) {
-        let block = getBlock(x, y, z);
-        if (!block.present) continue;  // solo bloques presentes
-        // Proyecta en 3D para obtener profundidad
-        const proj = rotate3D(x, y, z);
-        const depth = proj.xr + proj.yrp + proj.zp;  
-        block.depth = depth;  // Añade la profundidad al bloque
-      }
-    }
+// de mas lejano a mas cercano
+export function getBlocksOrderedByDepth() {
+  if (shouldRecalculateDepth) { 
+      // Obtiene todos los bloques como un array plano y los ordena por profundidad
+      recalculateDepthIfNeeded();
+      shouldRecalculateDepth = false;
   }
+    let blocks = worldAsArray();           // bloques presentes con depth
+    blocks.sort((a, b) => a.depth - b.depth);
+  
+    return blocks;;
+}
+
+// Obtiene todos los bloques como un array plano y los ordena por profundidad
+function recalculateDepthIfNeeded() {
+    if (shouldRecalculateDepth) { 
+      for (let x = 0; x < blocksW; x++) {
+        for (let y = 0; y < blocksW; y++) {
+          for (let z = 0; z < blocksH; z++) {
+            let block = getBlock(x, y, z);
+            if (!block.present) continue;  // solo bloques presentes
+            // Proyecta en 3D para obtener profundidad
+            const proj = rotate3D(x, y, z);
+            const depth = proj.xr + proj.yrp + proj.zp;  
+            block.depth = depth;  // Añade la profundidad al bloque
+          }
+        }
+      }
+      shouldRecalculateDepth = false;
+    }
 }
 
 export function incRotAngle(angle) {
@@ -111,3 +126,42 @@ export function drawTooltip() {
     text(t2, info.screenX + 15, info.screenY + 40);
   pop();
 }
+
+
+// Devuelve el bloque más cercano bajo (mx,my) o null si ninguno
+export function getBlockUnderMouse(mx, my) {
+  
+  let candidates = getBlocksOrderedByDepth();
+
+  // Recorre caras para detección de clic en orden inverso (de mas cercano a mas lejano)
+  for (let b of candidates.slice().reverse()) {
+    const x0 = isoX(b.x, b.y),         y0 = isoY(b.x, b.y, b.z);
+    const x1 = isoX(b.x + 1, b.y),      y1 = isoY(b.x + 1, b.y, b.z);
+    const x2 = isoX(b.x + 1, b.y + 1), y2 = isoY(b.x + 1, b.y + 1, b.z);
+    const x3 = isoX(b.x, b.y + 1),     y3 = isoY(b.x, b.y + 1, b.z);
+    const faces = [
+      [ {x:x0,y:y0}, {x:x1,y:y1}, {x:x2,y:y2}, {x:x3,y:y3} ],
+      [ {x:x3,y:y3}, {x:x2,y:y2}, {x:x2,y:y2 + tileH}, {x:x3,y:y3 + tileH} ],
+      [ {x:x1,y:y1}, {x:x2,y:y2}, {x:x2,y:y2 + tileH}, {x:x1,y:y1 + tileH} ]
+    ];
+    for (const poly of faces) {
+      if (pointInPoly(mx, my, poly)) return b;
+    }
+  }
+  return null;
+}
+
+
+// Algoritmo ray-casting para saber si (px,py) está dentro de polígono 'poly'
+function pointInPoly(px, py, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    let xi = poly[i].x, yi = poly[i].y;
+    let xj = poly[j].x, yj = poly[j].y;
+    let intersect = ((yi > py) != (yj > py)) &&
+      (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+

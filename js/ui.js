@@ -1,7 +1,8 @@
-import { blocksH, blocksW, getBlockUnderMouse } from './world.js';
+import { initWorld, carveCrater, blocksH, blocksW } from './world.js';
+import {getBlockUnderMouse} from './render.js';
 import { heightOffset } from './main.js';
 import { incPitchAngle, incRotAngle, isoX, isoY, rotate3D } from './render.js';
-
+import { MAX_BLOCK_TYPE}  from './blocks.js'; 
 export let tooltipActive = false;
 export let tooltipInfo = null;  
 
@@ -11,7 +12,7 @@ export function mousePressed() {
   const my = mouseY - heightOffset;        
   const block = getBlockUnderMouse(mx, my);
 	if (!block) {
-		return;
+  	return;
 	}
 	
   
@@ -20,8 +21,9 @@ export function mousePressed() {
   }
   else if (mouseButton === RIGHT) {
     // cicla tipo: 0 → 1 → 2 → 0 …
-    block.type = (cell.type + 1) % MAX_BLOCK_TYPE;    // <----- posar escales
+    block.type = (block.type + 1) % MAX_BLOCK_TYPE;    // <----- posar escales
   }
+  loop();
 }
 
 

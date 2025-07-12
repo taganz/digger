@@ -1,19 +1,15 @@
 
 import { initWorld, carveCrater, worldAsArray } from './world.js';
 import { drawBlock } from './blocks.js';
-import { drawLemmingPoint, collectLemmings, applyGravity, stepLemmings } from './lemmings.js'; 
-import { drawTooltip, getBlocksOrderedByDepth } from './render.js';
+import { drawLemmingPoint, applyGravity, stepLemmings } from './lemmings.js'; 
+import { drawTooltip, getBlocksAndLemmingsOrderedByDepth } from './render.js';
 import { mousePressed, mouseDragged} from './ui.js';
 import { keyPressed, keyReleased, tooltipActive, tooltipInfo } from './ui.js';
 import { blocksH, blocksW } from './world.js';
 
 export let cnv; // p5.js canvas element
 
-const LEMMINGS_ACTIVE = false;
-// Variables para la interacción y HUD
-
-//export let shouldRecalculateDepth = true;
-
+const LEMMINGS_ACTIVE = false; // si se dibujan lemmings o no
 
 
 // draw
@@ -47,18 +43,16 @@ function draw() {
 		// 1) Redistribución a través de puertas
 		stepLemmings();
 	}
-	
 
-	
-  let items = getBlocksOrderedByDepth();
+  let items = getBlocksAndLemmingsOrderedByDepth();
 
   // 3) Pinta todo en orden
   for (let it of items) {
     if (it.type === 'block') {
-      drawBlock(it.x, it.y, it.z, it.blockType);
+      drawBlock(it.payload);
     } else {
 			if (LEMMINGS_ACTIVE) {
-      	drawLemmingPoint(it);
+      	drawLemmingPoint(it.payload);
 			}
     }
   }
@@ -67,6 +61,8 @@ function draw() {
   if (tooltipActive && tooltipInfo) {
     drawTooltip();
   }
+
+  noLoop();
 }
 
 function createCanvasAdaptedToWindow() {

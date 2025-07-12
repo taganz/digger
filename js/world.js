@@ -25,6 +25,8 @@ const GALLERY_MAX_LEN = 10;
 export function getBlock(x, y, z){
 	return world[x][y][z];
 }
+
+
 export function initWorld() {
   // 1) Crea todos los bloques “normales”
   for (let x = 0; x < blocksW; x++) {
@@ -32,7 +34,8 @@ export function initWorld() {
     for (let y = 0; y < blocksW; y++) {
       world[x][y] = [];
       for (let z = 0; z < blocksH; z++) {
-        world[x][y][z] = {
+        world[x][y][z] = {  
+          x: x, y: y, z: z,  // coordenadas del bloque
           present: true,           // hay bloque
           // type queda reservado para tu lógica previa
           type: int(random(0, MAX_BLOCK_TYPE)),
@@ -133,65 +136,18 @@ export function worldAsArray() {
   for (let x = 0; x < blocksW; x++) {
     for (let y = 0; y < blocksW; y++) {
       for (let z = 0; z < blocksH; z++) {
-        if (!world[x][y][z].present) continue;  // solo bloques presentes
+        const block = getBlock(x, y, z);
+        if (!block || !block.present) continue;  // solo bloques presentes
         // Proyecta en 3D para obtener profundidad
-        const proj = rotate3D(x, y, z);
-        const depth = proj.xr + proj.yr + proj.zp;  
-        blocks.push({ x, y, z, depth, type: world[x][y][z].type });
+        //const proj = rotate3D(x, y, z);
+        //const depth = proj.xr + proj.yr + proj.zp;  
+        blocks.push(block);
       }
     }
   }
   return blocks;
 }
 
-
-// Devuelve {x,y,z} del bloque más cercano bajo (mx,my) o null si ninguno
-export function getBlockUnderMouse(mx, my) {
-  let candidates = [];
-  for (let x = 0; x < blocksW; x++) {
-    for (let y = 0; y < blocksW; y++) {
-      for (let z = 0; z < blocksH; z++) {
-        if (!world[x][y][z].present) continue;
-        const proj = rotate3D(x, y, z);
-        candidates.push({ x, y, z, depth: proj.xr + proj.yrp + proj.zp });
-      }
-    }
-  }
-  // Orden inverso: de más cercano a más lejano
-  candidates.sort((a, b) => b.depth - a.depth);
-
-  // Recorre caras para detección de clic
-  for (let b of candidates) {
-    const { x, y, z } = b;
-    const x0 = isoX(x, y),     y0 = isoY(x, y, z);
-    const x1 = isoX(x + 1, y), y1 = isoY(x + 1, y, z);
-    const x2 = isoX(x + 1, y + 1), y2 = isoY(x + 1, y + 1, z);
-    const x3 = isoX(x, y + 1),     y3 = isoY(x, y + 1, z);
-    const faces = [
-      [ {x:x0,y:y0}, {x:x1,y:y1}, {x:x2,y:y2}, {x:x3,y:y3} ],
-      [ {x:x3,y:y3}, {x:x2,y:y2}, {x:x2,y:y2 + tileH}, {x:x3,y:y3 + tileH} ],
-      [ {x:x1,y:y1}, {x:x2,y:y2}, {x:x2,y:y2 + tileH}, {x:x1,y:y1 + tileH} ]
-    ];
-    for (const poly of faces) {
-      if (pointInPoly(mx, my, poly)) return { x, y, z };
-    }
-  }
-  return null;
-}
-
-
-// Algoritmo ray-casting para saber si (px,py) está dentro de polígono 'poly'
-function pointInPoly(px, py, poly) {
-  let inside = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    let xi = poly[i].x, yi = poly[i].y;
-    let xj = poly[j].x, yj = poly[j].y;
-    let intersect = ((yi > py) != (yj > py)) &&
-      (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
 
 
 
@@ -224,7 +180,7 @@ export function carveCrater(cx, cy, maxRadius, depthLevels) {
         let d = dist(x + 0.5, y + 0.5, cx, cy);
         // Si está dentro del radio, vaciamos (¡sin excepciones!)
         if (d <= radius) {
-          world[x][y][z].present = false;
+          getBlock(x,y,z).present = false;
         }
       }
     }

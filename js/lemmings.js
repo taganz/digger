@@ -1,6 +1,8 @@
 import { DOOR, WINDOW, WALL, CORRIDOR } from './blocks.js';
-import { blocksH, blocksW, getBlock } from './world.js';
-import { rotate3D } from './render.js';
+import { blocksH, blocksW, getBlock, tileH, tileW} from './world.js';
+import { isoX, isoY, rotate3D } from './render.js';
+
+
 export const LEMMINGS_IN_BLOCK  = 20;
 const LEMMINGS_MAX_MOVE  = 5;
 

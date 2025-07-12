@@ -46,16 +46,14 @@ const doorW = 0.40;
 const doorHTop = 0.50;  // as a percentage of tileH
 
 
-export function drawBlock(x, y, z, type) {
+export function drawBlock(b) {
   
-	let b = getBlock(x, y, z);
-	
 	// Cálculo de las cuatro esquinas superiores en pantalla
-  x0 = isoX(x, y);         y0 = isoY(x, y, z);
-  x1 = isoX(x + 1, y);      y1 = isoY(x + 1, y, z);
-  x2 = isoX(x + 1, y + 1);  y2 = isoY(x + 1, y + 1, z);
-  x3 = isoX(x, y + 1);      y3 = isoY(x, y + 1, z);
-	xx = x; yy = y; zz = z;
+  x0 = isoX(b.x, b.y);         y0 = isoY(b.x, b.y, b.z);
+  x1 = isoX(b.x + 1, b.y);      y1 = isoY(b.x + 1, b.y, b.z);
+  x2 = isoX(b.x + 1, b.y + 1);  y2 = isoY(b.x + 1, b.y + 1, b.z);
+  x3 = isoX(b.x, b.y + 1);      y3 = isoY(b.x, b.y + 1, b.z);
+  xx = b.x; yy = b.y; zz = b.z;
 	
 	
 	drawLeftWall();
